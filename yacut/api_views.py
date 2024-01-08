@@ -2,47 +2,49 @@ from http import HTTPStatus as status
 from re import match
 
 from flask import jsonify, request
-
 from . import app, db
-from .error_handlers import InvalidAPIUsage
 from .models import URLMap
 from .utils import get_unique_short_id
-
-NOT_FOUND_ID = 'Указанный id не найден'
-MISSING_REQUEST = 'Отсутствует тело запроса'
-URL_REQUIRED_FIELD = '"url" является обязательным полем!'
-PATTERN_URL = r'^[a-z]+://[^\/\?:]+(:[0-9]+)?(\/.*?)?(\?.*)?$'
-ERROR_URL = 'Указан недопустимый URL'
-PATTERN_SHORT_URL = r'^[A-Za-z0-9_]{1,16}$'
-ERROR_SHORT_URL = 'Указано недопустимое имя для короткой ссылки'
-ID_NOT_FREE = 'Предложенный вариант короткой ссылки уже существует.'
+from .error_handlers import InvalidAPIUsage
+from .constants import (
+    ID_NOT_FOUND, MISSING_REQUEST, URL_REQUIRED_FIELD, PATTERN_URL, ERROR_URL,
+    PATTERN_SHORT_URL, ERROR_SHORT_URL, ID_NOT_FREE
+)
 
 
 @app.route('/api/id/<string:short>/', methods=['GET'])
 def yacat_redirect_api(short):
     redirect = URLMap.query.filter_by(short=short).first()
     if not redirect:
-        raise InvalidAPIUsage(NOT_FOUND_ID, status.NOT_FOUND)
+        raise InvalidAPIUsage(ID_NOT_FOUND, status.NOT_FOUND)
     return jsonify({'url': redirect.original})
 
 
 @app.route('/api/id/', methods=['POST'])
 def create_short_api():
     data = request.get_json()
+
     if not data:
         raise InvalidAPIUsage(MISSING_REQUEST)
-    if 'url' not in data:
+
+    url = data.get('url')
+    custom_id = data.get('custom_id')
+
+    if not url:
         raise InvalidAPIUsage(URL_REQUIRED_FIELD)
-    if not match(PATTERN_URL, data['url']):
+    if not match(PATTERN_URL, url):
         raise InvalidAPIUsage(ERROR_URL)
-    if not data.get('custom_id'):
-        data['custom_id'] = get_unique_short_id()
-    elif URLMap.query.filter_by(short=data['custom_id']).first():
-        raise InvalidAPIUsage(ID_NOT_FREE.format(data["custom_id"]))
-    elif not match(PATTERN_SHORT_URL, data['custom_id']):
-        raise InvalidAPIUsage(ERROR_SHORT_URL)
-    url_map = URLMap()
-    url_map.from_dict(data)
+
+    if custom_id:
+        if URLMap.query.filter_by(short=custom_id).first():
+            raise InvalidAPIUsage(ID_NOT_FREE.format(custom_id))
+        if not match(PATTERN_SHORT_URL, custom_id):
+            raise InvalidAPIUsage(ERROR_SHORT_URL)
+    else:
+        custom_id = get_unique_short_id()
+
+    url_map = URLMap(original=url, short=custom_id)
     db.session.add(url_map)
     db.session.commit()
+
     return jsonify(url_map.to_dict()), status.CREATED

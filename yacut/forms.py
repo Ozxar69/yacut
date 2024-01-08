@@ -1,14 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import SubmitField, URLField
 from wtforms.validators import URL, DataRequired, Length, Optional, Regexp
-
-DESCRIPTION_URL = 'Длинная ссылка'
-MISSING_DATA = 'Обязательное поле'
-ERROR_URL = 'Некорректный URL'
-DESCRIPTION_SHORT = 'Ваш вариант короткой ссылки'
-ERROR_LEN = 'Длина ссылки не может быть больше 16 символов'
-PATTERN_SHORT_URL = r'^[A-Za-z0-9_]+$'
-ERROR_SHORT_URL = 'Указано недопустимое имя для короткой ссылки'
+from .constants import  DESCRIPTION_URL, MISSING_DATA, ERROR_URL,DESCRIPTION_SHORT, ERROR_LEN, PATTERN_SHORT_URL, ERROR_SHORT_URL, CREATE
 
 
 class YacutForm(FlaskForm):
@@ -27,4 +20,4 @@ class YacutForm(FlaskForm):
                    message=ERROR_SHORT_URL)
         ]
     )
-    submit = SubmitField('Создать')
+    submit = SubmitField(CREATE)
