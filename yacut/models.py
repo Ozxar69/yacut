@@ -15,7 +15,7 @@ class URLMap(db.Model):
         return dict(
             url=self.original,
             short_link=url_for(
-                "yacat_redirect", short=self.short, _external=True
+                "yacut_redirect", short=self.short, _external=True
             ),
         )
 

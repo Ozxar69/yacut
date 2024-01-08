@@ -7,28 +7,34 @@ from .models import URLMap
 from .utils import get_unique_short_id
 from .error_handlers import InvalidAPIUsage
 from .constants import (
-    ID_NOT_FOUND, MISSING_REQUEST, URL_REQUIRED_FIELD, PATTERN_URL, ERROR_URL,
-    PATTERN_SHORT_URL, SHORT_URL_ERROR, OCCUPIED_ID
+    ID_NOT_FOUND,
+    MISSING_REQUEST,
+    URL_REQUIRED_FIELD,
+    PATTERN_URL,
+    ERROR_URL,
+    PATTERN_SHORT_URL,
+    SHORT_URL_ERROR,
+    OCCUPIED_ID,
 )
 
 
-@app.route('/api/id/<string:short>/', methods=['GET'])
-def yacat_redirect_api(short):
+@app.route("/api/id/<string:short>/", methods=["GET"])
+def yacut_redirect_api(short):
     redirect = URLMap.query.filter_by(short=short).first()
     if not redirect:
         raise InvalidAPIUsage(ID_NOT_FOUND, status.NOT_FOUND)
-    return jsonify({'url': redirect.original})
+    return jsonify({"url": redirect.original})
 
 
-@app.route('/api/id/', methods=['POST'])
+@app.route("/api/id/", methods=["POST"])
 def create_short_api():
     data = request.get_json()
 
     if not data:
         raise InvalidAPIUsage(MISSING_REQUEST)
 
-    url = data.get('url')
-    custom_id = data.get('custom_id')
+    url = data.get("url")
+    custom_id = data.get("custom_id")
 
     if not url:
         raise InvalidAPIUsage(URL_REQUIRED_FIELD)
