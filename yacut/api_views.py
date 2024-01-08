@@ -8,7 +8,7 @@ from .utils import get_unique_short_id
 from .error_handlers import InvalidAPIUsage
 from .constants import (
     ID_NOT_FOUND, MISSING_REQUEST, URL_REQUIRED_FIELD, PATTERN_URL, ERROR_URL,
-    PATTERN_SHORT_URL, ERROR_SHORT_URL, ID_NOT_FREE
+    PATTERN_SHORT_URL, SHORT_URL_ERROR, OCCUPIED_ID
 )
 
 
@@ -37,9 +37,9 @@ def create_short_api():
 
     if custom_id:
         if URLMap.query.filter_by(short=custom_id).first():
-            raise InvalidAPIUsage(ID_NOT_FREE.format(custom_id))
+            raise InvalidAPIUsage(OCCUPIED_ID.format(custom_id))
         if not match(PATTERN_SHORT_URL, custom_id):
-            raise InvalidAPIUsage(ERROR_SHORT_URL)
+            raise InvalidAPIUsage(SHORT_URL_ERROR)
     else:
         custom_id = get_unique_short_id()
 
