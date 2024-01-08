@@ -12,7 +12,13 @@ class URLMap(db.Model):
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
 
     def to_dict(self):
-        ...
+        return dict(
+            url=self.original,
+            short_link=url_for(
+                "yacat_redirect", short=self.short, _external=True
+            ),
+        )
 
-    def from_dict(self):
-        ...
+    def from_dict(self, data):
+        setattr(self, "original", data["url"])
+        setattr(self, "short", data["custom_id"])
